@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Today App</title>
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3B82F6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================
+           Today App - Unified Minimal Design System
+           Theme: Clean White & Soft Gray
+        ============================================ */
+        
+        :root {
+            /* Light Theme (Default) */
+            --bg-primary: #FAFAFA;
+            --bg-secondary: #FFFFFF;
+            --bg-card: #FFFFFF;
+            --text-primary: #1A1A1A;
+            --text-secondary: #6B7280;
+            --text-muted: #9CA3AF;
+            --border-color: #E5E7EB;
+            --accent: #3B82F6;
+            --accent-light: #EFF6FF;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --transition: all 0.2s ease;
+        }
+
+        /* Dark/Gray Theme */
+        body.theme-gray {
+            --bg-primary: #F3F4F6;
+            --bg-secondary: #E5E7EB;
+            --bg-card: #FFFFFF;
+            --text-primary: #111827;
+            --text-secondary: #4B5563;
+            --text-muted: #9CA3AF;
+            --border-color: #D1D5DB;
+            --accent: #6366F1;
+            --accent-light: #EEF2FF;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 28px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 420px;
+            min-height: 100vh;
+            background: var(--bg-secondary);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Header */
+        .header {
+            padding: 24px 20px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: var(--accent-light);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .info-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .info-btn:hover {
+            background: var(--accent-light);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* Info Tooltip */
+        .info-tooltip {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            width: 280px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .info-btn:hover .info-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .info-tooltip h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            text-align: left;
+        }
+
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-item i {
+            font-size: 0.9rem;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        /* Page Content */
+        .page-content {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .page-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Home Page */
+        #homePage {
+            padding: 0 20px 100px;
+            overflow-y: auto;
+        }
+
+        .greeting {
+            margin-bottom: 24px;
+        }
+
+        .greeting p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .greeting h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--accent);
+        }
+
+        .card:active {
+            transform: translateY(0);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            background: var(--accent-light);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .card-title {
+            flex: 1;
+        }
+
+        .card-title h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .card-title p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .card-arrow {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .card-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .card-status i {
+            color: var(--accent);
+        }
+
+        /* iFrame Container */
+        .iframe-container {
+            flex: 1;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 420px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: var(--radius-sm);
+        }
+
+        .nav-item i {
+            font-size: 1.25rem;
+        }
+
+        .nav-item:hover {
+            color: var(--text-secondary);
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-item.active i {
+            transform: scale(1.1);
+        }
+
+        /* Quick Stats Section */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+        }
+
+        .stat-card p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .stat-card h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Contact info in tooltip */
+        .info-contact {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .info-contact p {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .info-contact a {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+
+        .info-contact a:hover {
+            color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">Today<span>App</span></div>
+            <div class="header-actions">
+                <button class="theme-toggle" onclick="toggleTheme()" title="테마 변경">
+                    <i class="fas fa-circle-half-stroke"></i>
+                </button>
+                <button class="info-btn">
+                    <i class="fas fa-info"></i>
+                    <div class="info-tooltip">
+                        <h4><i class="fas fa-lightbulb"></i> 사용 안내</h4>
+                        <div class="info-item">
+                            <i class="fas fa-database"></i>
+                            <span>로컬 저장으로 오프라인에서도 사용 가능합니다</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-shield-halved"></i>
+                            <span>인터넷에 노출되지 않아 보안이 완벽합니다</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-cloud-arrow-up"></i>
+                            <span>백업은 메모장에 저장 후 불러오기로 복원 가능하며, 새 디바이스에서도 복원할 수 있습니다</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-triangle-exclamation"></i>
+                            <span>백업 없이 디바이스 변경 시 자료가 삭제되니 주의하세요</span>
+                        </div>
+                        <div class="info-contact">
+                            <p>Today_tab</p>
+                            <a href="mailto:todaytab.help@gmail.com">todaytab.help@gmail.com</a>
+                        </div>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Home Page -->
+        <div id="homePage" class="page-content active">
+            <div class="greeting">
+                <p id="dateDisplay"></p>
+                <h2>오늘도 좋은 하루 되세요 ✨</h2>
+            </div>
+
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <p>오늘의 할 일</p>
+                    <h4 id="todoStats">0 / 0</h4>
+                </div>
+                <div class="stat-card">
+                    <p>이번 달 잔액</p>
+                    <h4 id="moneyStats">0원</h4>
+                </div>
+            </div>
+
+            <div class="card" onclick="showPage('todo')">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="card-title">
+                        <h3>할 일</h3>
+                        <p>오늘의 목표를 관리하세요</p>
+                    </div>
+                    <div class="card-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+                <div class="card-status">
+                    <i class="fas fa-chart-simple"></i>
+                    <span id="todoScoreDisplay">점수: 0 / 0 P</span>
+                </div>
+            </div>
+
+            <div class="card" onclick="showPage('diary')">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="card-title">
+                        <h3>일기</h3>
+                        <p>오늘 하루를 기록하세요</p>
+                    </div>
+                    <div class="card-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+                <div class="card-status">
+                    <i class="fas fa-pen"></i>
+                    <span>나의 기록</span>
+                </div>
+            </div>
+
+            <div class="card" onclick="showPage('money')">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="card-title">
+                        <h3>가계부</h3>
+                        <p>수입과 지출을 관리하세요</p>
+                    </div>
+                    <div class="card-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+                <div class="card-status">
+                    <i class="fas fa-coins"></i>
+                    <span id="moneyDisplay">이번 달 잔액: 0원</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Todo Page -->
+        <div id="todoPage" class="page-content">
+            <div class="iframe-container">
+                <iframe src="todo.html" id="todoFrame"></iframe>
+            </div>
+        </div>
+
+        <!-- Diary Page -->
+        <div id="diaryPage" class="page-content">
+            <div class="iframe-container">
+                <iframe src="diary.html" id="diaryFrame"></iframe>
+            </div>
+        </div>
+
+        <!-- Money Page -->
+        <div id="moneyPage" class="page-content">
+            <div class="iframe-container">
+                <iframe src="money.html" id="moneyFrame"></iframe>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="showPage('home')" id="navHome">
+                <i class="fas fa-house"></i>
+                <span>홈</span>
+            </button>
+            <button class="nav-item" onclick="showPage('todo')" id="navTodo">
+                <i class="fas fa-check-circle"></i>
+                <span>할 일</span>
+            </button>
+            <button class="nav-item" onclick="showPage('diary')" id="navDiary">
+                <i class="fas fa-book"></i>
+                <span>일기</span>
+            </button>
+            <button class="nav-item" onclick="showPage('money')" id="navMoney">
+                <i class="fas fa-wallet"></i>
+                <span>가계부</span>
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        // Theme Management
+        const THEMES = ['light', 'gray'];
+        let currentThemeIndex = 0;
+
+        function setTheme(theme) {
+            document.body.classList.remove('theme-gray');
+            if (theme === 'gray') {
+                document.body.classList.add('theme-gray');
+            }
+            localStorage.setItem('today_app_theme', theme);
+            
+            // Notify iframes about theme change
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(iframe => {
+                try {
+                    iframe.contentWindow.postMessage({ type: 'themeChange', theme: theme }, '*');
+                } catch (e) {
+                    console.log('Could not notify iframe of theme change');
+                }
+            });
+        }
+
+        function toggleTheme() {
+            currentThemeIndex = (currentThemeIndex + 1) % THEMES.length;
+            setTheme(THEMES[currentThemeIndex]);
+        }
+
+        // Page Navigation
+        function showPage(pageName) {
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            const pageMap = {
+                'home': 'homePage',
+                'todo': 'todoPage',
+                'diary': 'diaryPage',
+                'money': 'moneyPage'
+            };
+
+            const navMap = {
+                'home': 'navHome',
+                'todo': 'navTodo',
+                'diary': 'navDiary',
+                'money': 'navMoney'
+            };
+
+            const targetPage = document.getElementById(pageMap[pageName]);
+            const targetNav = document.getElementById(navMap[pageName]);
+
+            if (targetPage) targetPage.classList.add('active');
+            if (targetNav) targetNav.classList.add('active');
+
+            // Update stats when returning to home
+            if (pageName === 'home') {
+                updateHomeStats();
+            }
+        }
+
+        // Update date display
+        function updateDateDisplay() {
+            const now = new Date();
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                weekday: 'long' 
+            };
+            document.getElementById('dateDisplay').textContent = 
+                now.toLocaleDateString('ko-KR', options);
+        }
+
+        // Update home stats from localStorage
+        function updateHomeStats() {
+            const todoScore = localStorage.getItem('todoCurrentScore') || '0';
+            const todoMax = localStorage.getItem('todoMaxScore') || '0';
+            
+            document.getElementById('todoStats').textContent = `${todoScore} / ${todoMax}`;
+            document.getElementById('todoScoreDisplay').textContent = `점수: ${todoScore} / ${todoMax} P`;
+            
+            const monthlyBalance = localStorage.getItem('moneyMonthlyBalance') || '0';
+            const formatted = new Intl.NumberFormat('ko-KR').format(parseInt(monthlyBalance));
+            document.getElementById('moneyStats').textContent = `${formatted}원`;
+            document.getElementById('moneyDisplay').textContent = `이번 달 잔액: ${formatted}원`;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('today_app_theme') || 'light';
+            currentThemeIndex = THEMES.indexOf(savedTheme);
+            if (currentThemeIndex === -1) currentThemeIndex = 0;
+            setTheme(savedTheme);
+            
+            updateDateDisplay();
+            updateHomeStats();
+        });
+
+        // Listen for messages from iframes
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'statsUpdate') {
+                updateHomeStats();
+            }
+        });
+
+        // Global access
+        window.showPage = showPage;
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(() => console.log('Service Worker registered'))
+                .catch((err) => console.log('Service Worker registration failed:', err));
+        }
+    </script>
+</body>
+</html>

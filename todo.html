@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>할 일 - Today App</title>
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <script src="https://unpkg.com/dexie@3.2.3/dist/dexie.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================
+           Today App - Todo Page
+           Unified Minimal Design System
+        ============================================ */
+        
+        :root {
+            --bg-primary: #FAFAFA;
+            --bg-secondary: #FFFFFF;
+            --bg-card: #FFFFFF;
+            --text-primary: #1A1A1A;
+            --text-secondary: #6B7280;
+            --text-muted: #9CA3AF;
+            --border-color: #E5E7EB;
+            --accent: #3B82F6;
+            --accent-light: #EFF6FF;
+            --success: #10B981;
+            --success-light: #D1FAE5;
+            --danger: #EF4444;
+            --danger-light: #FEE2E2;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --transition: all 0.2s ease;
+        }
+
+        body.theme-gray {
+            --bg-primary: #F3F4F6;
+            --bg-secondary: #E5E7EB;
+            --bg-card: #FFFFFF;
+            --text-primary: #111827;
+            --text-secondary: #4B5563;
+            --text-muted: #9CA3AF;
+            --border-color: #D1D5DB;
+            --accent: #6366F1;
+            --accent-light: #EEF2FF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 80px;
+            transition: var(--transition);
+        }
+
+        .container {
+            max-width: 100%;
+        }
+
+        /* Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .page-header h1 i {
+            color: var(--accent);
+            margin-right: 8px;
+        }
+
+        /* Date Card */
+        .date-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .date-card .date {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .date-card .time {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title i {
+            color: var(--accent);
+        }
+
+        /* Add Todo */
+        .add-todo-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-todo-group input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 0.9rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .add-todo-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: var(--bg-card);
+        }
+
+        .add-todo-group input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+
+        /* Score Card */
+        .score-card {
+            text-align: center;
+        }
+
+        .score-display {
+            margin-bottom: 8px;
+        }
+
+        .score-display .label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .score-display .value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .grade-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent-light);
+            color: var(--accent);
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+        }
+
+        .motivation-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 12px;
+        }
+
+        /* Todo List */
+        .todo-list {
+            min-height: 100px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 30px;
+            font-size: 0.875rem;
+        }
+
+        .empty-state i {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border-color);
+            gap: 12px;
+        }
+
+        .todo-item:last-child {
+            border-bottom: none;
+        }
+
+        .todo-checkbox {
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .todo-checkbox:checked {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .todo-checkbox:checked::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .todo-content {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .todo-text {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .todo-item.done .todo-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .todo-points {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            background: var(--accent-light);
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+        }
+
+        .todo-delete {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+
+        .todo-delete:hover {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        /* Reset Button */
+        .reset-section {
+            margin-top: 20px;
+        }
+
+        .btn-reset {
+            width: 100%;
+            padding: 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-reset:hover {
+            background: var(--danger-light);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-check-circle"></i>할 일</h1>
+        </div>
+
+        <div class="date-card">
+            <div class="date" id="currentDate"></div>
+            <div class="time" id="currentTime"></div>
+        </div>
+
+        <div class="card">
+            <div class="add-todo-group">
+                <input type="text" id="newTodo" placeholder="새로운 할 일을 입력하세요...">
+                <button class="btn btn-primary" id="addTodoBtn">
+                    <i class="fas fa-plus"></i>
+                    추가
+                </button>
+            </div>
+        </div>
+
+        <div class="card score-card">
+            <div class="score-display">
+                <span class="label">오늘의 점수</span>
+                <div class="value">
+                    <span id="currentScore">0</span> / <span id="maxScore">0</span> P
+                </div>
+            </div>
+            <div class="grade-display">
+                <i class="fas fa-trophy"></i>
+                <span>Grade: <span id="gradeDisplay">F</span></span>
+            </div>
+            <p class="motivation-text">오늘의 목표를 달성하고 점수를 획득하세요!</p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <i class="fas fa-list-check"></i>
+                할 일 목록
+            </div>
+            <div class="todo-list" id="todoList">
+                <div class="empty-state">
+                    <i class="fas fa-clipboard-list"></i>
+                    <p>등록된 할 일이 없습니다</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="reset-section">
+            <button class="btn-reset" id="resetAllBtn">
+                <i class="fas fa-rotate"></i>
+                할 일 초기화
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Theme handling from parent
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'themeChange') {
+                document.body.classList.remove('theme-gray');
+                if (event.data.theme === 'gray') {
+                    document.body.classList.add('theme-gray');
+                }
+            }
+        });
+
+        // Check for saved theme
+        const savedTheme = localStorage.getItem('today_app_theme');
+        if (savedTheme === 'gray') {
+            document.body.classList.add('theme-gray');
+        }
+
+        // Database
+        const db = new Dexie('StableTodoDB_V3_Final');
+        const DEFAULT_TODO_SCORE = 20;
+
+        db.version(1).stores({
+            todos: '++id, text, completed, date, score'
+        });
+
+        // Add Todo
+        async function addTodo() {
+            const todoInput = document.getElementById('newTodo');
+            const text = todoInput.value.trim();
+
+            if (text === '') {
+                alert('할 일을 입력해 주세요.');
+                return;
+            }
+
+            try {
+                await db.todos.add({
+                    text: text,
+                    completed: false,
+                    date: new Date().toISOString(),
+                    score: DEFAULT_TODO_SCORE
+                });
+                todoInput.value = '';
+                renderTodoList();
+            } catch (error) {
+                alert('저장 중 오류가 발생했습니다.');
+                console.error(error);
+            }
+        }
+
+        // Toggle Complete
+        async function toggleComplete(id) {
+            try {
+                const todo = await db.todos.get(id);
+                if (todo) {
+                    await db.todos.update(id, { completed: !todo.completed });
+                    renderTodoList();
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // Delete Todo
+        async function deleteTodo(id) {
+            if (confirm('이 할 일을 삭제하시겠습니까?')) {
+                try {
+                    await db.todos.delete(id);
+                    renderTodoList();
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        }
+
+        // Reset All
+        async function resetAllTodos() {
+            if (confirm('모든 할 일을 초기화하시겠습니까?')) {
+                try {
+                    await db.todos.clear();
+                    renderTodoList();
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        }
+
+        // Update Grade
+        function updateGrade(score, maxScore) {
+            const gradeDisplay = document.getElementById('gradeDisplay');
+            let grade = 'F';
+
+            if (maxScore > 0) {
+                const percentage = (score / maxScore) * 100;
+                if (percentage >= 90) grade = 'A+';
+                else if (percentage >= 80) grade = 'A';
+                else if (percentage >= 70) grade = 'B';
+                else if (percentage >= 60) grade = 'C';
+                else if (percentage >= 50) grade = 'D';
+                else grade = 'F';
+            }
+            gradeDisplay.textContent = grade;
+        }
+
+        // Render Todo List
+        async function renderTodoList() {
+            let todos;
+            try {
+                const allTodos = await db.todos.orderBy('id').reverse().toArray();
+                const uncompleted = allTodos.filter(t => !t.completed);
+                const completed = allTodos.filter(t => t.completed);
+                todos = [...uncompleted, ...completed];
+            } catch (e) {
+                todos = [];
+            }
+
+            const todoListElement = document.getElementById('todoList');
+            todoListElement.innerHTML = '';
+
+            let currentScore = 0;
+            let totalPossibleScore = 0;
+
+            if (todos.length === 0) {
+                todoListElement.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-clipboard-list"></i>
+                        <p>등록된 할 일이 없습니다</p>
+                    </div>
+                `;
+            } else {
+                todos.forEach(todo => {
+                    const scoreValue = todo.score || DEFAULT_TODO_SCORE;
+                    totalPossibleScore += scoreValue;
+                    if (todo.completed) {
+                        currentScore += scoreValue;
+                    }
+
+                    const itemElement = document.createElement('div');
+                    itemElement.className = `todo-item ${todo.completed ? 'done' : ''}`;
+
+                    itemElement.innerHTML = `
+                        <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''} 
+                            onclick="toggleComplete(${todo.id})">
+                        <div class="todo-content">
+                            <span class="todo-text">${todo.text}</span>
+                            <span class="todo-points">${scoreValue}P</span>
+                        </div>
+                        <button class="todo-delete" onclick="deleteTodo(${todo.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    `;
+                    todoListElement.appendChild(itemElement);
+                });
+            }
+
+            document.getElementById('currentScore').textContent = currentScore;
+            document.getElementById('maxScore').textContent = totalPossibleScore;
+            updateGrade(currentScore, totalPossibleScore);
+
+            // Save to localStorage for main page
+            localStorage.setItem('todoCurrentScore', currentScore);
+            localStorage.setItem('todoMaxScore', totalPossibleScore);
+
+            // Notify parent
+            if (window.parent !== window) {
+                window.parent.postMessage({ type: 'statsUpdate' }, '*');
+            }
+        }
+
+        // Display Date Time
+        function displayDateTime() {
+            const now = new Date();
+
+            const dateOptions = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                weekday: 'long' 
+            };
+            const dateString = now.toLocaleDateString('ko-KR', dateOptions);
+
+            const timeOptions = { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit', 
+                hour12: true 
+            };
+            const timeString = now.toLocaleTimeString('ko-KR', timeOptions);
+
+            document.getElementById('currentDate').textContent = dateString;
+            document.getElementById('currentTime').textContent = timeString;
+        }
+
+        // Initialize
+        function initializeApp() {
+            document.getElementById('addTodoBtn').addEventListener('click', addTodo);
+            document.getElementById('newTodo').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addTodo();
+            });
+            document.getElementById('resetAllBtn').addEventListener('click', resetAllTodos);
+
+            displayDateTime();
+            setInterval(displayDateTime, 1000);
+            renderTodoList();
+        }
+
+        window.onload = initializeApp;
+        window.toggleComplete = toggleComplete;
+        window.deleteTodo = deleteTodo;
+    </script>
+</body>
+</html>
